@@ -23,3 +23,12 @@
   Open and setup Pycharm (Second download)<br>
   <br>
 </h3>
+
+<h1 align="center">
+  Step 3:
+</h1>
+<h3 align="center">
+  Copy and paste the desired state code into your Python file <br>
+  Right click the red lines to install the libraries and run the code <br>
+  <br>
+</h3>
