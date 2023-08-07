@@ -1,3 +1,4 @@
+import re
 import requests
 import multiprocessing
 from termcolor import colored
@@ -18,14 +19,18 @@ class Worker(multiprocessing.Process):
                 break
 
             try:
-                val = {
-                    '__VIEWSTATE': '/wEPDwULLTE2Nzg2NjE0NDhkZOho2qa4uYR/f+8obq3/ImCxcNxH36xm67bHA/DCf7mQ',
-                    '__VIEWSTATEGENERATOR': '0719FE0A',
-                    '__EVENTVALIDATION': '/wEdAAhSwalmR41pxSO86DbjFtdTphigSR1TLsx/PgGne7pkTpB7LNiAmBrY+lkV4yRhukq4UDQtuzi2yL5oIR7b2qk2FOSIJTkYpiT1a4/KG6JIzmxkUFM1z5DWUKiTRJ9g63z4IcjYoaGuA6R78NuEHgsNxxpsutNlt3RySqFY6uFDYws1JyvmrlwnteHbS5dhyF7dKCjfIe8P3vD5UreH3OSv',
+                session = requests.session()
+                response = session.get(url="https://services.flhsmv.gov/MVCheckPersonalPlate/")
+                
+                data = {
+                    '__VIEWSTATE': re.search(r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^"]*)" />', response.text).group(1),
+                    '__VIEWSTATEGENERATOR': re.search(r'<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="([^"]*)" />', response.text).group(1),
+                    '__EVENTVALIDATION': re.search(r'<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^"]*)" />', response.text).group(1),
                     'ctl00$MainContent$txtInputRowOne': word1,
-                    'ctl00$MainContent$btnSubmit': 'Submit'}
+                    'ctl00$MainContent$btnSubmit': 'Submit'
+                }
 
-                request = requests.post(url="https://services.flhsmv.gov/MVCheckPersonalPlate/", data=val)
+                request = session.post(url="https://services.flhsmv.gov/MVCheckPersonalPlate/", data=data)
                 if '<span id="MainContent_lblOutPutRowOne" class="outputText" style="color: #0000a0; font-weight: bold">AVAILABLE</span>' in request.text:
                     print(colored("PLATE AVAILABLE:  " + word1, 'green'))
                     f = open("outputresults.txt", "a")
