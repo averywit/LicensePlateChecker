@@ -19,34 +19,90 @@ class Worker(multiprocessing.Process):
 
             try:
                 session = requests.session()
-
-                session.get(url="https://www.dmv.virginia.gov/dmvnet/plate_purchase/select_plate.asp?PLTNO=")
-
-                data = {
-                    "TransType": "INQ",
-                    "TransID": "RESINQ",
-                    "ReturnPage": "/dmvnet/plate_purchase/s2end.asp",
-                    "HelpPage": "",
-                    "Choice": "A",
-                    "PltNo": f"{word}",
-                    "HoldISA": "N",
-                    "HoldSavePltNo": "",
-                    "HoldCallHost": "",
-                    "NumCharsInt": "8",
-                    "CurrentTrans": "plate_purchase_reserve",
-                    "PltType": "IGWT",
-                    "PltNoAvail": "",
-                    "PersonalMsg": "Y",
-                    "Let1": f"{word[0]}",
-                    "Let2": f"{word[1]}",
-                    "Let3": f"{word[2]}",
-                    "Let4": f"{word[3]}",
-                    "Let5": f"{word[4]}",
-                    "Let6": f"{word[5]}",
-                    "Let7": f"{word[6]}",
-                    "Let8": f"{word[7]}"
+                headers = {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Content-Length': '153',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'DNT': '1',
+                    'Host': 'transactions.dmv.virginia.gov',
+                    'Origin': 'https://transactions.dmv.virginia.gov',
+                    'Pragma': 'no-cache',
+                    'Referer': 'https://transactions.dmv.virginia.gov/dmvnet/plate_purchase/s2end.asp',
+                    'Sec-Fetch-Dest': 'frame',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Upgrade-Insecure-Requests': '1',
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                    'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"macOS"'
                 }
-                response = session.post(url="https://www.dmv.virginia.gov/dmvnet/common/router.asp", data=data)
+                data = {
+                    'TransID': 'HLDPLT',
+                    'HoldISA': 'N',
+                    'PltChars': '75',
+                    'PltLogoPos': '0',
+                    'PltHcapPlt': 'IGWTH',
+                    'PltHcapChars': '50',
+                    'PltHcapLogoPos': '1',
+                    'PltLogoExceptPos': '0',
+                    'PltLogoSize': '15',
+                    'PltType': 'IGWT',
+                    'PltNo': '',
+                }
+                session.post(url="https://transactions.dmv.virginia.gov/dmvnet/plate_purchase/s2dispplt.asp", headers=headers, data=data)
+
+                headers = {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Content-Length': '296',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Dnt': '1',
+                    'Host': 'transactions.dmv.virginia.gov',
+                    'Origin': 'https://transactions.dmv.virginia.gov',
+                    'Pragma': 'no-cache',
+                    'Referer': 'https://transactions.dmv.virginia.gov/dmvnet/plate_purchase/s2end.asp',
+                    'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'Sec-Ch-Ua-Mobile': '?0',
+                    'Sec-Ch-Ua-Platform': '"macOS"',
+                    'Sec-Fetch-Dest': 'frame',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Sec-Fetch-User': '?1',
+                    'Upgrade-Insecure-Requests': '1',
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+                }
+                data = {
+                    'TransType': 'INQ',
+                    'TransID': 'RESINQ',
+                    'ReturnPage': '/dmvnet/plate_purchase/s2end.asp',
+                    'HelpPage': '',
+                    'Choice': 'A',
+                    'PltNo': f'{word}',
+                    'HoldISA': 'N',
+                    'HoldSavePltNo': '',
+                    'HoldCallHost': '',
+                    'NumCharsInt': '8',
+                    'CurrentTrans': 'plate_purchase_reserve',
+                    'PltType': 'IGWT',
+                    'PltNoAvail': '',
+                    'PersonalMsg': 'Y',
+                }
+                for i in range(1, 9):
+                    field_name = f'Let{i}'
+                    if i <= len(word):
+                        data[field_name] = word[i - 1]
+                    else:
+                        data[field_name] = ''
+
+                response = session.post(url="https://transactions.dmv.virginia.gov/dmvnet/common/router.asp", headers=headers, data=data)
 
                 if "Congratulations" in response.text:
                     print(colored("PLATE AVAILABLE:  " + word, 'green'))
@@ -82,32 +138,32 @@ if __name__ == '__main__':
     # Creating an array of all the 1 letter/character combinations
     if choice == 1:
         for i in alphabet:
-            lines.insert(index, i + "       ")
+            lines.insert(index, i)
             index += 1
         for i in numbers:
-            lines.insert(index, i + "       ")
+            lines.insert(index, i)
             index += 1
     # Creating an array of all 2 letter combinations
     if choice == 2:
         for i in alphabet:
             for j in alphabet:
-                lines.insert(index, i + j + "      ")
+                lines.insert(index, i + j)
                 index += 1
             for k in numbers:
-                lines.insert(index, i + k + "      ")
+                lines.insert(index, i + k)
                 index += 1
         for l in numbers:
             for m in numbers:
-                lines.insert(index, l + m + "      ")
+                lines.insert(index, l + m)
                 index += 1
             for n in alphabet:
-                lines.insert(index, l + n + "      ")
+                lines.insert(index, l + n)
     # Creating an array of all 3 letter combinations
     elif choice == 3:
         for i in alphabet:
             for j in alphabet:
                 for k in alphabet:
-                    lines.insert(index, i + j + k + "     ")
+                    lines.insert(index, i + j + k)
                     index += 1
     # Retrieving the list of all 3 letter words from Github scrape
     elif choice == 4:
@@ -115,7 +171,7 @@ if __name__ == '__main__':
         r = requests.get(url)
         for line in r.iter_lines():
             if line:
-                lines.insert(index, str(line).strip("b'") + "     ")
+                lines.insert(index, str(line).strip("b'"))
                 index += 1
     # Retrieving the list of all 4 letter words from Github scrape
     elif choice == 5:
@@ -124,7 +180,7 @@ if __name__ == '__main__':
         for line in r.iter_lines():
             if line:
                 stupidparse = str(line)
-                lines.insert(index, stupidparse[2:6] + "    ")
+                lines.insert(index, stupidparse[2:6])
                 index += 1
 
     # Retrieving the list of all 5 letter words from Github scrape
@@ -134,7 +190,7 @@ if __name__ == '__main__':
         for line in r.iter_lines():
             if line:
                 stupidparse = str(line)
-                lines.insert(index, stupidparse[2:7] + "   ")
+                lines.insert(index, stupidparse[2:7])
                 index += 1
 
     # Creating an array of all 3 number combinations
@@ -142,16 +198,16 @@ if __name__ == '__main__':
         for i in numbers:
             for j in numbers:
                 for k in numbers:
-                    lines.insert(index, i + j + k + "     ")
+                    lines.insert(index, i + j + k)
                     index += 1
 
     # Creating an array of all 3 letter repeater combinations
     elif choice == 8:
         for i in alphabet:
-            lines.insert(index, i + i + i + "     ")
+            lines.insert(index, i + i + i)
             index += 1
         for j in alphabet:
-            lines.insert(index, j + j + j + j + "    ")
+            lines.insert(index, j + j + j + j)
             index += 1
 
     jobs = []
