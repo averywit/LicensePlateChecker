@@ -31,7 +31,8 @@ class Worker(threading.Thread):
                     }
                     response = session.post(
                         url="https://apps.nd.gov/dot/mv/mvrenewal/plateSearch.htm",
-                        data=data
+                        data=data,
+                        timeout=10
                     )
 
                     if response.status_code == 200:
