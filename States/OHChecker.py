@@ -24,7 +24,8 @@ class Worker(threading.Thread):
                 try:
                     session = requests.session()
                     response = session.get(
-                        url=f"https://bmvonline.dps.ohio.gov/bmvonline/oplates/PlatePreview?plateNumber={word}&vehicleClass=PC&organizationCode=0"
+                        url=f"https://bmvonline.dps.ohio.gov/bmvonline/oplates/PlatePreview?plateNumber={word}&vehicleClass=PC&organizationCode=0",
+                        timeout=10
                     )
                     if response.status_code == 200:
                         if "This plate number is currently available." not in response.text:
