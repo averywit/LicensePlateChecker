@@ -41,6 +41,7 @@ class Worker(threading.Thread):
                             f.close()
                         else:
                             print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
+                        break
 
                 except:
                     retries += 1
