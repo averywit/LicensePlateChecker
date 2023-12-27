@@ -42,7 +42,7 @@ class Worker(threading.Thread):
                             url=f"https://pros.mvtrip.alabama.gov/api/Plate/Availability?message={word}",
                             timeout=10
                         )
-                        print(response.text)
+
                         if response.status_code == 200:
                             if 'true' not in response.text:
                                 print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
