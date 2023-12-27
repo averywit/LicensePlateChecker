@@ -1,162 +1,144 @@
 import requests
-import multiprocessing
+import threading
 from termcolor import colored
 from colorama import init
+from queue import Queue
 init(autoreset=True)
 
 
-class Worker(multiprocessing.Process):
+class Worker(threading.Thread):
 
-    def __init__(self, job_queue):
+    def __init__(self, job_queue, max_retries=10):
         super().__init__()
         self._job_queue = job_queue
+        self._max_retries = max_retries
 
     def run(self):
         while True:
-            url = self._job_queue.get()
-            if url is None:
+            word = self._job_queue.get()
+            if word is None:
                 break
 
-            session = requests.Session()
-            headers = {
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Connection": "keep-alive",
-                "Host": "api.kiwiplates.nz",
-                "Origin": "https://www.kiwiplates.nz",
-                "Referer": "https://www.kiwiplates.nz/",
-                "sec-ch-ua": '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": '"macOS"',
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-site",
-                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
-            }
-            response = session.get(url=url, headers=headers)
+            retries = 0
+            while retries < self._max_retries:
+                try:
+                    session = requests.Session()
+                    headers = {
+                        "Accept": "application/json, text/plain, */*",
+                        "Accept-Encoding": "gzip, deflate, br",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Connection": "keep-alive",
+                        "Host": "api.kiwiplates.nz",
+                        "Origin": "https://www.kiwiplates.nz",
+                        "Referer": "https://www.kiwiplates.nz/",
+                        "sec-ch-ua": '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-ch-ua-platform": '"macOS"',
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-site",
+                        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+                    }
+                    response = session.get(
+                        url=f"https://api.kiwiplates.nz/api/combination/{word}/?vehicleTypeId=1",
+                        headers=headers,
+                        timeout=10
+                    )
 
-            if '"Available":false' in str(response.text):
-                print(colored("PLATE UNAVAILABLE:  " + url[42:len(url)-17], 'red'))
-            else:
-                print(colored("PLATE AVAILABLE:  " + url[42:len(url)-17], 'green'))
-                f = open("outputresults.txt", "a")
-                f.write(url[42:len(url)-17] + "\n")
-                f.close()
+                    if response.status_code == 200:
+                        if '"Available":false' in response.text:
+                            print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
+                        else:
+                            print(colored("PLATE AVAILABLE:  " + word, 'green'))
+                            f = open("outputresults.txt", "a")
+                            f.write(word + "\n")
+                            f.close()
+                except:
+                    retries += 1
+
+
+def generateCombinations(input_number):
+
+    # Used for combination generation
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    numbers = "0123456789"
+
+    # Creating a list of all 1-character combinations
+    if input_number == 1:
+        return [
+            *[a for a in alphabet],
+            *[b for b in alphabet]
+        ]
+
+    # Creating a list of all 3-character combinations
+    elif input_number == 2:
+        return [
+            *[a + b for a in alphabet for b in alphabet],
+            *[a + b for a in alphabet for b in numbers],
+            *[a + b for a in numbers for b in numbers]
+        ]
+
+    # Creating a list of all 3-letter combinations
+    elif input_number == 3:
+        return [a + b + c for a in alphabet for b in alphabet for c in alphabet]
+
+    # Creating a list of all 3-number combinations
+    elif input_number == 4:
+        return [a + b + c for a in numbers for b in numbers for c in numbers]
+
+    # Creating a list of all 3-letter words via GitHub scrape
+    elif input_number == 5:
+        return requests.get(
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/3letterwords.txt"
+        ).text.split("\n")
+
+    # Creating a list of all 4-letter words via GitHub scrape
+    elif input_number == 6:
+        return requests.get(
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/4letterwords.txt"
+        ).text.split("\n")
+
+    # Creating a list of all 5-letter words via GitHub scrape
+    elif input_number == 7:
+        return requests.get(
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/5letterwords.txt"
+        ).text.split("\n")
+
+    # Creating a list of all 3, 4, 5-letter repeater combinations
+    elif input_number == 8:
+        return [
+            *[a + a + a for a in alphabet],
+            *[a + a + a + a for a in alphabet],
+            *[a + a + a + a + a for a in alphabet]
+        ]
 
 
 if __name__ == '__main__':
+
     # On-screen input for desired checks
-    print("1 <- All 1 letter/character combinations")
+    print("1 <- All 1 character combinations")
     print("2 <- All 2 letter combinations")
     print("3 <- All 3 letter combinations")
-    print("4 <- All 3 letter words")
-    print("5 <- All 4 letter words")
-    print("6 <- All 5 letter words")
-    print("7 <- All 3 numbers")
-    print("8 <- All 3-4 letter repeaters")
+    print("4 <- All 3 number combinations")
+    print("5 <- All 3 letter word combinations")
+    print("6 <- All 4 letter word combinations")
+    print("7 <- All 5 letter word combinations")
+    print("8 <- All 3, 4, 5 letter repeater combinations")
     choice = int(input("Please enter what you want to check: "))
 
-    lines = []
-    random = 0
-    alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
-                "V", "W", "X", "Y", "Z"]
-    numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    index = 0
-    stupidparse = ""
-    urlfront = "https://api.kiwiplates.nz/api/combination/"
-    urlback = "/?vehicleTypeId=1"
-    # Creating an array of all the 1 letter/character combinations
-    if choice == 1:
-        for i in alphabet:
-            lines.insert(index, i)
-            index += 1
-        for i in numbers:
-            lines.insert(index, i)
-            index += 1
-    # Creating an array of all 2 letter combinations
-    if choice == 2:
-        for i in alphabet:
-            for j in alphabet:
-                lines.insert(index, i + j)
-                index += 1
-            for k in numbers:
-                lines.insert(index, i + k)
-                index += 1
-        for l in numbers:
-            for m in numbers:
-                lines.insert(index, l + m)
-                index += 1
-            for n in alphabet:
-                lines.insert(index, l + n)
-    # Creating an array of all 3 letter combinations
-    elif choice == 3:
-        for i in alphabet:
-            for j in alphabet:
-                for k in alphabet:
-                    lines.insert(index, i + j + k)
-                    index += 1
-    # Retrieving the list of all 3 letter words from Github scrape
-    elif choice == 4:
-        url = "https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/3letterwords.txt"
-        r = requests.get(url)
-        for line in r.iter_lines():
-            if line:
-                lines.insert(index, str(line).strip("b'"))
-                index += 1
-    # Retrieving the list of all 4 letter words from Github scrape
-    elif choice == 5:
-        url = "https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/4letterwords.txt"
-        r = requests.get(url)
-        for line in r.iter_lines():
-            if line:
-                stupidparse = str(line)
-                lines.insert(index, stupidparse[2:6])
-                index += 1
-
-    # Retrieving the list of all 5 letter words from Github scrape
-    elif choice == 6:
-        url = "https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/5letterwords.txt"
-        r = requests.get(url)
-        for line in r.iter_lines():
-            if line:
-                stupidparse = str(line)
-                lines.insert(index, stupidparse[2:7])
-                index += 1
-
-    # Creating an array of all 3 + 4 number combinations
-    elif choice == 7:
-        for i in numbers:
-            for j in numbers:
-                for k in numbers:
-                    lines.insert(index, i + j + k)
-                    index += 1
-        for i in numbers:
-            for j in numbers:
-                for k in numbers:
-                    for l in numbers:
-                        lines.insert(index, i + j + k + l)
-                        index += 1
-
-    # Creating an array of all repeater combinations
-    elif choice == 8:
-        for i in alphabet:
-            lines.insert(index, i + i + i)
-            index += 1
-        for j in alphabet:
-            lines.insert(index, j + j + j + j)
-            index += 1
+    # Holds the combinations to check
+    combinations = generateCombinations(choice)
 
     jobs = []
-    job_queue = multiprocessing.Queue()
+    job_queue = Queue()
 
-    for i in range(10):
+    for i in range(25):
         p = Worker(job_queue)
         jobs.append(p)
         p.start()
 
-    for line in lines:
-        job_queue.put(urlfront+line+urlback)
+    for combo in combinations:
+        job_queue.put(combo)
 
     for j in jobs:
         job_queue.put(None)
