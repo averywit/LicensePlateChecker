@@ -53,6 +53,7 @@ class Worker(threading.Thread):
                             f = open("outputresults.txt", "a")
                             f.write(word + "\n")
                             f.close()
+                        break
                 except:
                     retries += 1
 
