@@ -90,27 +90,38 @@ def generateCombinations(input_number):
     # Creating a list of all 3-letter words via GitHub scrape
     elif input_number == 5:
         return requests.get(
-            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/3letterwords.txt"
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/3letterwords.txt"
         ).text.split("\n")
 
     # Creating a list of all 4-letter words via GitHub scrape
     elif input_number == 6:
         return requests.get(
-            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/4letterwords.txt"
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/4letterwords.txt"
         ).text.split("\n")
 
     # Creating a list of all 5-letter words via GitHub scrape
     elif input_number == 7:
         return requests.get(
-            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/5letterwords.txt"
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/5letterwords.txt"
         ).text.split("\n")
 
-    # Creating a list of all 3, 4, 5-letter repeater combinations
+    # Creating a list of all 6-letter words via GitHub scrape
     elif input_number == 8:
+        return requests.get(
+            url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/6letterwords.txt"
+        ).text.split("\n")
+
+    # Creating a list of all 3, 4, 5, 6 repeater combinations
+    elif input_number == 9:
         return [
             *[a + a + a for a in alphabet],
             *[a + a + a + a for a in alphabet],
-            *[a + a + a + a + a for a in alphabet]
+            *[a + a + a + a + a for a in alphabet],
+            *[a + a + a + a + a + a for a in alphabet],
+            *[a + a + a for a in numbers],
+            *[a + a + a + a for a in numbers],
+            *[a + a + a + a + a for a in numbers],
+            *[a + a + a + a + a + a for a in numbers]
         ]
 
 
@@ -124,7 +135,8 @@ if __name__ == '__main__':
     print("5 <- All 3 letter word combinations")
     print("6 <- All 4 letter word combinations")
     print("7 <- All 5 letter word combinations")
-    print("8 <- All 3, 4, 5 letter repeater combinations")
+    print("8 <- All 6 letter word combinations")
+    print("9 <- All 3, 4, 5, 6 repeater combinations")
     choice = int(input("Please enter what you want to check: "))
 
     # Holds the combinations to check
