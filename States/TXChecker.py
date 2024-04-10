@@ -43,7 +43,7 @@ class Worker(threading.Thread):
                     )
 
                     if response.status_code == 200:
-                        if '{"status":"available"' not in str(response.text):
+                        if "xed;f" in str(response.content):
                             print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
                         else:
                             print(colored("PLATE AVAILABLE:  " + word, 'green'))
