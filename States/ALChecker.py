@@ -23,6 +23,8 @@ class Worker(threading.Thread):
         # Runs worker until "None" is reached.
         # None = No combinations are left to check.
         while True:
+
+            # Retreives a combination "word" from "job_queue"
             word = self._job_queue.get()
 
             # Breaks loop when "None" is retrieved from "job_queue".
