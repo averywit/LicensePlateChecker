@@ -24,7 +24,7 @@ class Worker(threading.Thread):
         # None = No combinations are left to check.
         while True:
 
-            # Retreives a combination "word" from "job_queue"
+            # Retreives a combination "word" from "job_queue".
             word = self._job_queue.get()
 
             # Breaks loop when "None" is retrieved from "job_queue".
@@ -52,7 +52,7 @@ class Worker(threading.Thread):
                             "https": f"http://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}"
                         }
 
-                        # Assigns proxies to the session for checking the combination
+                        # Assigns proxies to the session for checking the combination.
                         session = requests.session()
                         session.proxies = proxies
 
@@ -66,26 +66,26 @@ class Worker(threading.Thread):
                         # Successful request, continue to the next.
                         if response.status_code == 200:
 
-                            # True not being in the request's response means it is taken
-                            # Do not record a taken license plate combination
+                            # True not being in the request's response means it is taken.
+                            # Do not record a taken license plate combination.
                             if 'true' not in response.text:
                                 print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
 
-                            # True being in the request's response means it is available
-                            # Record an available license plate combination
+                            # True being in the request's response means it is available.
+                            # Record an available license plate combination.
                             else:
                                 print(colored("PLATE AVAILABLE:  " + word, 'green'))
                                 f = open("outputresults.txt", "a")
                                 f.write(word + "\n")
                                 f.close()
                             
-                            # Exits the retry loop because a successful check was completed
+                            # Exits the retry loop because a successful check was completed.
                             break
 
                         # Bad request, repeat it.
                         # Any bad request will trigger the exception below.
 
-                    # Increases the counter for total retries of checking the combination
+                    # Increases the counter for total retries of checking the combination.
                     except:
                         retries += 1
 
@@ -96,14 +96,14 @@ def generateCombinations(input_number):
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     numbers = "0123456789"
 
-    # Creating a list of all 1-character combinations
+    # Creating a list of all 1-character combinations.
     if input_number == 1:
         return [
             *[a for a in alphabet],
             *[b for b in alphabet]
         ]
 
-    # Creating a list of all 3-character combinations
+    # Creating a list of all 3-character combinations.
     elif input_number == 2:
         return [
             *[a + b for a in alphabet for b in alphabet],
@@ -111,39 +111,39 @@ def generateCombinations(input_number):
             *[a + b for a in numbers for b in numbers]
         ]
 
-    # Creating a list of all 3-letter combinations
+    # Creating a list of all 3-letter combinations.
     elif input_number == 3:
         return [a + b + c for a in alphabet for b in alphabet for c in alphabet]
 
-    # Creating a list of all 3-number combinations
+    # Creating a list of all 3-number combinations.
     elif input_number == 4:
         return [a + b + c for a in numbers for b in numbers for c in numbers]
 
-    # Creating a list of all 3-letter words via GitHub scrape
+    # Creating a list of all 3-letter words via GitHub scrape.
     elif input_number == 5:
         return requests.get(
             url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/3letterwords.txt"
         ).text.split("\n")
 
-    # Creating a list of all 4-letter words via GitHub scrape
+    # Creating a list of all 4-letter words via GitHub scrape.
     elif input_number == 6:
         return requests.get(
             url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/4letterwords.txt"
         ).text.split("\n")
 
-    # Creating a list of all 5-letter words via GitHub scrape
+    # Creating a list of all 5-letter words via GitHub scrape.
     elif input_number == 7:
         return requests.get(
             url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/5letterwords.txt"
         ).text.split("\n")
 
-    # Creating a list of all 6-letter words via GitHub scrape
+    # Creating a list of all 6-letter words via GitHub scrape.
     elif input_number == 8:
         return requests.get(
             url="https://raw.githubusercontent.com/averywit/LicensePlateChecker/main/WordLists/6letterwords.txt"
         ).text.split("\n")
 
-    # Creating a list of all 3, 4, 5, 6 repeater combinations
+    # Creating a list of all 3, 4, 5, 6 repeater combinations.
     elif input_number == 9:
         return [
             *[a + a + a for a in alphabet],
@@ -159,7 +159,7 @@ def generateCombinations(input_number):
 
 if __name__ == '__main__':
 
-    # On-screen input for desired checks
+    # On-screen input for desired checks.
     print("1 <- All 1 character combinations")
     print("2 <- All 2 letter combinations")
     print("3 <- All 3 letter combinations")
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     print("9 <- All 3, 4, 5, 6 repeater combinations")
     choice = int(input("Please enter what you want to check: "))
 
-    # Holds the combinations to check
+    # Holds the combinations to check.
     combinations = generateCombinations(choice)
 
     jobs = []
