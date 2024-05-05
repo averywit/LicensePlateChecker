@@ -10,17 +10,32 @@ class Worker(threading.Thread):
 
     def __init__(self, job_queue, max_retries=10):
         super().__init__()
+        
+        # Assigns the job queue to the worker.
+        # This is filled with the combinations to check.
         self._job_queue = job_queue
+
+        # Sets the maximum retries (10) for failed requests.
         self._max_retries = max_retries
 
     def run(self):
+
+        # Runs worker until "None" is reached.
+        # None = No combinations are left to check.
         while True:
             word = self._job_queue.get()
+
+            # Breaks loop when "None" is retrieved from "job_queue".
             if word is None:
                 break
 
+            # Alabama only allows words that do not include an O.
+            # 0 (zero) substituted for every O -- skip because it is not a "word".
             if "O" not in word:
                 retries = 0
+
+                # Retry loop that makes multithreading happy.
+                # Most of the time, this will not loop. It is just for safety.
                 while retries < self._max_retries:
                     try:
                         # INSERT RESIDENTIAL PROXIES HERE
@@ -35,22 +50,40 @@ class Worker(threading.Thread):
                             "https": f"http://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}"
                         }
 
+                        # Assigns proxies to the session for checking the combination
                         session = requests.session()
                         session.proxies = proxies
 
+                        # Make the request to check the "word" from "job_queue".
+                        # Timeout of 10 seconds incase of a bad proxy.
                         response = session.get(
                             url=f"https://pros.mvtrip.alabama.gov/api/Plate/Availability?message={word}",
                             timeout=10
                         )
 
+                        # Successful request, continue to the next.
                         if response.status_code == 200:
+
+                            # True not being in the request's response means it is taken
+                            # Do not record a taken license plate combination
                             if 'true' not in response.text:
                                 print(colored("PLATE UNAVAILABLE:  " + word, 'red'))
+
+                            # True being in the request's response means it is available
+                            # Record an available license plate combination
                             else:
                                 print(colored("PLATE AVAILABLE:  " + word, 'green'))
                                 f = open("outputresults.txt", "a")
                                 f.write(word + "\n")
                                 f.close()
+                            
+                            # Exits the retry loop because a successful check was completed
+                            break
+
+                        # Bad request, repeat it.
+                        # Any bad request will trigger the exception below.
+
+                    # Increases the counter for total retries of checking the combination
                     except:
                         retries += 1
 
