@@ -82,7 +82,7 @@ class Worker(threading.Thread):
                         data[f"txtLicense{character + 1}"] = f"{word[character]}"
 
                     # Make the request to complete the combination check.
-                    # Timeout of 10 seconds incase of a bad proxy.
+                    # Timeout of 10 seconds incase of a stuck request.
                     response = session.post(
                         url="https://www12.honolulu.gov/specialplates/main/frmInquiry.asp?sFlag=search&sType=",
                         headers=headers,
