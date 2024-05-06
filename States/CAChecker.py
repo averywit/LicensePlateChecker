@@ -11,7 +11,7 @@ class Worker(threading.Thread):
     def __init__(self, job_queue, max_retries=10):
         super().__init__()
 
-         # Assigns the job queue to the worker.
+        # Assigns the job queue to the worker.
         # This is filled with the combinations to check.
         self._job_queue = job_queue
 
