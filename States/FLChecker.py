@@ -41,7 +41,7 @@ class Worker(threading.Thread):
                     session = requests.session()
 
                     # Make the request to get the dynamic data needed for the check.
-                    # Timeout of 10 seconds incase of a bad proxy.
+                    # Timeout of 10 seconds incase of a stuck request.
                     response = session.get(
                         url="https://services.flhsmv.gov/MVCheckPersonalPlate/",
                         timeout=10
@@ -56,7 +56,7 @@ class Worker(threading.Thread):
                         'ctl00$MainContent$btnSubmit': 'Submit'}
 
                     # Make the request to complete the combination check.
-                    # Timeout of 10 seconds incase of a bad proxy.
+                    # Timeout of 10 seconds incase of a stuck request.
                     response = session.post(
                         url="https://services.flhsmv.gov/MVCheckPersonalPlate/",
                         data=data,
