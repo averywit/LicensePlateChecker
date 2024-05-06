@@ -40,7 +40,7 @@ class Worker(threading.Thread):
                     session = requests.session()
 
                     # Make the request to check the "word" from "job_queue".
-                    # Timeout of 10 seconds incase of a bad proxy.
+                    # Timeout of 10 seconds incase of a stuck request.
                     response = session.get(
                         url=f"https://mymvd.iowadot.gov/Services/PersonalizedSpecialtyPlate.svc/IsPlateTextAvaliable?callback=jQuery18307316947538277612_1669163868002&plateText={word}",
                         timeout=10
